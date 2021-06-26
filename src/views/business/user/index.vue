@@ -335,7 +335,6 @@ export default {
       this.getDialogList()
     },
     getDialogList () {
-
     },
     handleChangeStatus (row, val) {
       const msg = val === 1 ? '启用' : '禁用'

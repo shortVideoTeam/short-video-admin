@@ -110,27 +110,19 @@
       @pagination="getList"
     />
 
-    <el-dialog :visible.sync="dialog">
-      <video
-        :src="videoSrc"
-        controls="controls"
-        v-if="dialog"
-        autoplay
-        width="100%"
-        height="auto"
-      >
-        your browser does not support the video tag
-      </video>
-    </el-dialog>
+    <videoPreview :src="videoSrc" :visible.sync="videoDialog" />
   </div>
 </template>
 
 <script>
 import {} from "@/api/business/user";
+import videoPreview from "@/components/VideoPreview/index";
 
 export default {
   name: "Promote",
-  components: {},
+  components: {
+    videoPreview
+  },
   data() {
     return {
       // 遮罩层
@@ -157,7 +149,8 @@ export default {
         { label: "已失效", value: 2 }
       ],
 
-      dialog: false,
+      // video
+      videoDialog: false,
       videoSrc: ""
     };
   },
@@ -192,7 +185,7 @@ export default {
 
     handlePreview(row) {
       this.videoSrc = "https://www.w3school.com.cn/i/movie.ogg";
-      this.dialog = true;
+      this.videoDialog = true;
     }
   }
 };
