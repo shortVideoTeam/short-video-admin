@@ -12,33 +12,34 @@
         </el-button>
       </div>
       <el-row :gutter="20">
-        <el-col :span="3" class="card-label"> 红包剩余总额: </el-col>
-        <el-col :span="21">
-          <el-button type="text" size="small">{{ detail.sumMoney }}</el-button>
+        <el-col :span="3" class="card-label"> 邀请人数: </el-col>
+        <el-col :span="9">
+          <el-button type="text" size="small">{{ detail.xxx }}</el-button>
         </el-col>
       </el-row>
+      <!--  -->
       <el-row :gutter="20">
-        <el-col :span="3" class="card-label"> 单笔领取金额: </el-col>
-        <el-col :span="21">
-          <el-button type="text" size="small">{{ detail.money }}</el-button>
+        <el-col :span="3" class="card-label"> 推广时长: </el-col>
+        <el-col :span="6">
+          <el-button type="text" size="small">{{ detail.xxx }}</el-button>
         </el-col>
       </el-row>
+      <!--  -->
+      <el-row :gutter="20">
+        <el-col :span="3" class="card-label"> 推广金额: </el-col>
+        <el-col :span="6">
+          <el-button type="text" size="small">{{ detail.xxx }}</el-button>
+        </el-col>
+      </el-row>
+      <!--  -->
     </el-card>
 
     <!-- 添加或修改钱包明细对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="红包总额" prop="sumMoney">
+        <el-form-item label="xxx" prop="xxx">
           <el-input
-            v-model="form.sumMoney"
-            placeholder="请输入"
-            clearable
-            size="small"
-          />
-        </el-form-item>
-        <el-form-item label="单笔领取金额" prop="money">
-          <el-input
-            v-model="form.money"
+            v-model="form.xxx"
             placeholder="请输入"
             clearable
             size="small"
@@ -56,10 +57,10 @@
 </template>
 
 <script>
-import { updateWalle } from "@/api/business/walle";
+import { } from "@/api/business/promote";
 
 export default {
-  name: "Walle",
+  name: "Promote-Setting",
   components: {},
   data () {
     return {
@@ -71,20 +72,15 @@ export default {
       open: false,
       // 表单校验
       rules: {
-        sumMoney: [
-          { required: true, message: "不能为空", trigger: "blur" }
-        ],
-        money: [
+        xxx: [
           { required: true, message: "不能为空", trigger: "blur" }
         ],
       },
       form: {
-        sumMoney: 0,
-        money: 0
+        xxx: 0,
       },
       detail: {
-        sumMoney: 0,
-        money: 0
+        xxx: 0,
       }
     };
   },
@@ -92,7 +88,7 @@ export default {
   },
   methods: {
     edit () {
-      this.title = '修改红包配置'
+      this.title = '修改推广配置'
       this.form = { ...this.detail }
       this.open = true
     },
@@ -105,12 +101,12 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.buttonLoading = true;
-          updateWalle(this.form).then(response => {
-            this.buttonLoading = false;
-            this.msgSuccess("修改成功");
-            this.open = false;
-            this.getList();
-          });
+          // updateWalle(this.form).then(response => {
+          //   this.buttonLoading = false;
+          //   this.msgSuccess("修改成功");
+          //   this.open = false;
+          //   this.getList();
+          // });
         }
       });
     },

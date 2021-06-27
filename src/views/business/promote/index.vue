@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import {} from "@/api/business/user";
+import { } from "@/api/business/promote";
 import videoPreview from "@/components/VideoPreview/index";
 
 export default {
@@ -123,7 +123,7 @@ export default {
   components: {
     videoPreview
   },
-  data() {
+  data () {
     return {
       // 遮罩层
       loading: false,
@@ -154,12 +154,12 @@ export default {
       videoSrc: ""
     };
   },
-  created() {
+  created () {
     this.getList();
   },
   methods: {
     /** 查询用户信息列表 */
-    getList() {
+    getList () {
       // this.loading = true;
       // listUser(this.queryParams).then(response => {
       //   this.userList = response.rows.map(item => {
@@ -173,17 +173,17 @@ export default {
       // });
     },
     /** 搜索按钮操作 */
-    handleQuery() {
+    handleQuery () {
       this.queryParams.pageNum = 1;
       this.getList();
     },
     /** 重置按钮操作 */
-    resetQuery() {
+    resetQuery () {
       this.resetForm("queryForm");
       this.handleQuery();
     },
 
-    handlePreview(row) {
+    handlePreview (row) {
       this.videoSrc = "https://www.w3school.com.cn/i/movie.ogg";
       this.videoDialog = true;
     }

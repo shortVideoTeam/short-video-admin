@@ -7,7 +7,7 @@
       v-show="showSearch"
       label-width="68px"
     >
-      <el-form-item label="火脉号" prop="uuid">
+      <el-form-item label="火脉号">
         <el-input
           v-model="queryParams.uuid"
           placeholder="请输入用户火脉号Id"
@@ -176,7 +176,7 @@ import {
 export default {
   name: "Follow",
   components: {},
-  data() {
+  data () {
     return {
       // 遮罩层
       loading: true,
@@ -203,12 +203,12 @@ export default {
       }
     };
   },
-  created() {
+  created () {
     this.getList();
   },
   methods: {
     /** 查询用户关注列表 */
-    getList() {
+    getList () {
       this.loading = true;
       listFollow(this.queryParams).then(response => {
         this.followList = response.rows;
@@ -217,16 +217,16 @@ export default {
       });
     },
     /** 搜索按钮操作 */
-    handleQuery() {
+    handleQuery () {
       this.queryParams.pageNum = 1;
       this.getList();
     },
     /** 重置按钮操作 */
-    resetQuery() {
+    resetQuery () {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    handleLook(row) {
+    handleLook (row) {
       this.dialog = true;
       this.dialogTotal = 0;
       this.dialogList = [];
@@ -236,7 +236,7 @@ export default {
       };
       this.getDialogList();
     },
-    getDialogList() {}
+    getDialogList () { }
   }
 };
 </script>
