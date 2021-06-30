@@ -5,12 +5,20 @@
       ref="queryForm"
       :inline="true"
       v-show="showSearch"
-      label-width="68px"
     >
-      <el-form-item label="火脉号">
+      <el-form-item label="用户火脉号">
         <el-input
-          v-model="queryParams.uuid"
-          placeholder="请输入用户火脉号Id"
+          v-model="queryParams.uuId"
+          placeholder="请输入用户火脉号"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="用户ID">
+        <el-input
+          v-model="queryParams.userId"
+          placeholder="请输入用户Id"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -22,11 +30,12 @@
           icon="el-icon-search"
           size="mini"
           @click="handleQuery"
-          >搜索</el-button
         >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
+          搜索
+        </el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">
+          重置
+        </el-button>
       </el-form-item>
     </el-form>
 
@@ -60,7 +69,7 @@
       <el-table-column
         label="会员火脉号"
         align="center"
-        prop="uuid"
+        prop="uuId"
         width="120"
       />
       <el-table-column
@@ -69,19 +78,18 @@
         prop="phone"
         width="120"
       />
-      <el-table-column label="关注好友总数" align="center" prop="" />
+      <el-table-column
+        label="关注好友总数"
+        align="center"
+        prop="followNumber"
+      />
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleLook(scope.row)"
-          >
+          <el-button size="mini" type="text" @click="handleLook(scope.row)">
             关注详情
           </el-button>
         </template>
@@ -99,7 +107,7 @@
     <el-dialog title="关注列表详情" :visible.sync="dialog">
       <el-table v-loading="dialogLoading" :data="dialogList">
         <el-table-column type="index" width="55" align="center" label="编号" />
-        <el-table-column label="用户头像" align="center">
+        <el-table-column label="关注用户头像" align="center">
           <template slot-scope="scope">
             <el-image
               size="mini"
@@ -107,46 +115,29 @@
               fit="contain"
               :src="scope.row.avatar"
               :style="{ width: '50px', height: '50px', marginRight: '5px' }"
-              :previewSrcList="[scope.row.avatar]"
             />
           </template>
         </el-table-column>
         <el-table-column
-          label="会员昵称"
+          label="关注用户昵称"
           align="center"
           prop="nickName"
           width="120"
         />
         <el-table-column
-          label="会员火脉号"
+          label="关注用户火脉号"
           align="center"
-          prop="uuid"
+          prop="uuId"
           width="120"
         />
         <el-table-column
-          label="会员手机号"
+          label="关注用户手机号"
           align="center"
           prop="phone"
           width="120"
         />
-        <el-table-column label="邀请码" align="center" prop="" />
-        <el-table-column label="邀请人数" align="center" prop="" />
-        <el-table-column label="累计收益" align="center" prop="" />
         <el-table-column
-          label="可提现金额"
-          align="center"
-          prop=""
-          width="100"
-        />
-        <el-table-column
-          label="是否绑定微信"
-          align="center"
-          prop="isBindWx"
-          width="100"
-        />
-        <el-table-column label="账号状态" align="center" prop="statusStr" />
-        <el-table-column
-          label="注册时间"
+          label="关注时间"
           align="center"
           prop="createTime"
           width="150"
@@ -179,7 +170,7 @@ export default {
   data () {
     return {
       // 遮罩层
-      loading: true,
+      loading: false,
       // 显示搜索条件
       showSearch: true,
       // 总条数
@@ -190,7 +181,8 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        uuid: undefined
+        uuid: undefined,
+        userId: null
       },
       //
       dialog: false,
@@ -199,7 +191,8 @@ export default {
       dialogList: [],
       dialogParams: {
         pageNum: 1,
-        pageSize: 10
+        pageSize: 10,
+        userId: null
       }
     };
   },
@@ -232,11 +225,19 @@ export default {
       this.dialogList = [];
       this.dialogParams = {
         pageNum: 1,
-        pageSize: 10
+        pageSize: 10,
+        userId: row.userId
       };
       this.getDialogList();
     },
-    getDialogList () { }
+    getDialogList () {
+      this.dialogLoading = true
+      getFollow(this.dialogParams).then(response => {
+        this.dialogLoading = false
+        this.dialogList = response.rows;
+        this.dialogTotal = response.total;
+      });
+    }
   }
 };
 </script>

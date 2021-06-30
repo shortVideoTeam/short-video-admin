@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 // 查询用户关注列表
-export function listFollow(query) {
+export function listFollow (query) {
   return request({
     url: '/business/follow/list',
     method: 'get',
@@ -10,15 +10,16 @@ export function listFollow(query) {
 }
 
 // 查询用户关注详细
-export function getFollow(userId) {
+export function getFollow (params) {
   return request({
-    url: '/business/follow/' + userId,
-    method: 'get'
+    url: '/business/follow/detail',
+    method: 'get',
+    params
   })
 }
 
 // 新增用户关注
-export function addFollow(data) {
+export function addFollow (data) {
   return request({
     url: '/business/follow',
     method: 'post',
@@ -27,7 +28,7 @@ export function addFollow(data) {
 }
 
 // 修改用户关注
-export function updateFollow(data) {
+export function updateFollow (data) {
   return request({
     url: '/business/follow',
     method: 'put',
@@ -36,7 +37,7 @@ export function updateFollow(data) {
 }
 
 // 删除用户关注
-export function delFollow(userId) {
+export function delFollow (userId) {
   return request({
     url: '/business/follow/' + userId,
     method: 'delete'
@@ -44,7 +45,7 @@ export function delFollow(userId) {
 }
 
 // 导出用户关注
-export function exportFollow(query) {
+export function exportFollow (query) {
   return request({
     url: '/business/follow/export',
     method: 'get',
