@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import { updateWalle } from "@/api/business/walle";
+import { } from "@/api/business/walle";
 
 export default {
   name: "Walle",
@@ -105,12 +105,12 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.buttonLoading = true;
-          updateWalle(this.form).then(response => {
-            this.buttonLoading = false;
-            this.msgSuccess("修改成功");
-            this.open = false;
-            this.getList();
-          });
+          // updateWalle(this.form).then(response => {
+          //   this.buttonLoading = false;
+          //   this.msgSuccess("修改成功");
+          //   this.open = false;
+          //   this.getList();
+          // });
         }
       });
     },

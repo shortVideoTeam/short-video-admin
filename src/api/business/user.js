@@ -1,11 +1,11 @@
 import request from '@/utils/request'
 
 // 查询用户信息列表
-export function listUser (query) {
+export function listUser (params) {
   return request({
     url: '/business/user/list',
     method: 'get',
-    params: query
+    params
   })
 }
 

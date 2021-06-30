@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
-// 查询钱包明细列表
-export function listWalle(query) {
+// 查询红包金额配置列表
+export function listConfig (query) {
   return request({
     url: '/business/walle/list',
     method: 'get',
@@ -9,16 +9,16 @@ export function listWalle(query) {
   })
 }
 
-// 查询钱包明细详细
-export function getWalle(id) {
+// 查询红包金额配置详细
+export function getConfig (id) {
   return request({
     url: '/business/walle/' + id,
     method: 'get'
   })
 }
 
-// 新增钱包明细
-export function addWalle(data) {
+// 新增红包金额配置
+export function addConfig (data) {
   return request({
     url: '/business/walle',
     method: 'post',
@@ -26,8 +26,8 @@ export function addWalle(data) {
   })
 }
 
-// 修改钱包明细
-export function updateWalle(data) {
+// 修改红包金额配置
+export function updateConfig (data) {
   return request({
     url: '/business/walle',
     method: 'put',
@@ -35,16 +35,16 @@ export function updateWalle(data) {
   })
 }
 
-// 删除钱包明细
-export function delWalle(id) {
+// 删除红包金额配置
+export function delConfig (id) {
   return request({
     url: '/business/walle/' + id,
     method: 'delete'
   })
 }
 
-// 导出钱包明细
-export function exportWalle(query) {
+// 导出红包金额配置
+export function exportConfig (query) {
   return request({
     url: '/business/walle/export',
     method: 'get',
