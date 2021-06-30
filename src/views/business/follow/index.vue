@@ -89,7 +89,12 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
-          <el-button size="mini" type="text" @click="handleLook(scope.row)">
+          <el-button
+            size="mini"
+            type="text"
+            v-if="+scope.row.followNumber > 0"
+            @click="handleLook(scope.row)"
+          >
             关注详情
           </el-button>
         </template>

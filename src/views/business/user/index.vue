@@ -104,15 +104,26 @@
       />
       <el-table-column label="上级火脉号" align="center" width="120">
         <template slot-scope="scope">
-          <el-button type="text" @click="searchUUid(scope.row.uuid)">
-            {{ scope.row.uuid }}
+          <el-button type="text" @click="searchUUid(scope.row.inviteUserId)">
+            {{ scope.row.inviteUserId }}
           </el-button>
         </template>
       </el-table-column>
-      <el-table-column label="邀请码" align="center" prop="" />
-      <el-table-column label="邀请人数" align="center" prop="" />
-      <el-table-column label="累计收益" align="center" prop="" />
-      <el-table-column label="可提现金额" align="center" prop="" width="100" />
+      <el-table-column
+        label="邀请码"
+        align="center"
+        prop="inviteCode"
+        width="150"
+        show-overflow-tooltip
+      />
+      <el-table-column label="邀请人数" align="center" prop="inviteNum" />
+      <el-table-column label="累计收益" align="center" prop="income" />
+      <el-table-column
+        label="可提现金额"
+        align="center"
+        prop="money"
+        width="100"
+      />
       <el-table-column
         label="是否绑定微信"
         align="center"
