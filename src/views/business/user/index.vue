@@ -187,7 +187,6 @@
               fit="contain"
               :src="scope.row.avatar"
               :style="{ width: '50px', height: '50px', marginRight: '5px' }"
-              :previewSrcList="[scope.row.avatar]"
             />
           </template>
         </el-table-column>
@@ -209,13 +208,25 @@
           prop="phone"
           width="120"
         />
-        <el-table-column label="邀请码" align="center" prop="" />
-        <el-table-column label="邀请人数" align="center" prop="" />
-        <el-table-column label="累计收益" align="center" prop="" />
+        <el-table-column
+          label="上级火脉号"
+          align="center"
+          width="120"
+          prop="inviteUserId"
+        />
+        <el-table-column
+          label="邀请码"
+          align="center"
+          prop="inviteCode"
+          width="150"
+          show-overflow-tooltip
+        />
+        <el-table-column label="邀请人数" align="center" prop="inviteNum" />
+        <el-table-column label="累计收益" align="center" prop="income" />
         <el-table-column
           label="可提现金额"
           align="center"
-          prop=""
+          prop="money"
           width="100"
         />
         <el-table-column
@@ -342,10 +353,22 @@ export default {
       this.dialogParams = {
         pageNum: 1,
         pageSize: 10,
+        userId: row.userId
       }
       this.getDialogList()
     },
     getDialogList () {
+      this.dialogLoading = true;
+      getUser(this.dialogParams).then(response => {
+        this.dialogList = response.rows.map(item => {
+          return Object.assign({}, item, {
+            'statusStr': +item.status === 1 ? '启用' : '禁用',
+            'isBindWx': !!item.phone ? '是' : '否'
+          })
+        });
+        this.dialogTotal = response.total;
+        this.dialogLoading = false;
+      });
     },
     handleChangeStatus (row, val) {
       const msg = val === 1 ? '启用' : '禁用'

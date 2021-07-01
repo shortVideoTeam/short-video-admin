@@ -10,10 +10,11 @@ export function listUser (params) {
 }
 
 // 查询用户信息详细
-export function getUser (userId) {
+export function getUser (params) {
   return request({
-    url: '/business/user/' + userId,
-    method: 'get'
+    url: '/business/user/detail',
+    method: 'get',
+    params
   })
 }
 
