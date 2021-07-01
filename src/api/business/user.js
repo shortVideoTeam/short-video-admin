@@ -18,31 +18,31 @@ export function getUser (params) {
   })
 }
 
-// 新增用户信息
-export function addUser (data) {
-  return request({
-    url: '/business/user',
-    method: 'post',
-    data: data
-  })
-}
+// // 新增用户信息
+// export function addUser (data) {
+//   return request({
+//     url: '/business/user',
+//     method: 'post',
+//     data: data
+//   })
+// }
 
-// 修改用户信息
-export function updateUser (data) {
-  return request({
-    url: '/business/user',
-    method: 'put',
-    data: data
-  })
-}
+// // 修改用户信息
+// export function updateUser (data) {
+//   return request({
+//     url: '/business/user',
+//     method: 'put',
+//     data: data
+//   })
+// }
 
-// 删除用户信息
-export function delUser (userId) {
-  return request({
-    url: '/business/user/' + userId,
-    method: 'delete'
-  })
-}
+// // 删除用户信息
+// export function delUser (userId) {
+//   return request({
+//     url: '/business/user/' + userId,
+//     method: 'delete'
+//   })
+// }
 
 // 导出用户信息
 export function exportUser (query) {

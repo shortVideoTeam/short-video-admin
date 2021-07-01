@@ -255,7 +255,7 @@
 </template>
 
 <script>
-import { listUser, getUser, delUser, addUser, updateUser, exportUser, changeStatus } from "@/api/business/user";
+import { listUser, getUser, exportUser, changeStatus } from "@/api/business/user";
 
 export default {
   name: "User",

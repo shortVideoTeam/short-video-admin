@@ -1,8 +1,8 @@
 <template>
   <div>
-    <el-dialog :visible.sync="visible">
+    <el-dialog :visible.sync="dialogVisible">
       <video
-        v-if="visible"
+        v-if="dialogVisible"
         :src="src"
         controls="controls"
         autoplay
@@ -27,6 +27,16 @@ export default {
       type: String,
       default: ""
     }
-  }
+  },
+  computed: {
+    dialogVisible: {
+      get () {
+        return this.visible
+      },
+      set (val) {
+        this.$emit('update:visible', val)
+      }
+    }
+  },
 };
 </script>

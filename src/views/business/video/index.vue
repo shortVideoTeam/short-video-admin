@@ -5,18 +5,17 @@
       ref="queryForm"
       :inline="true"
       v-show="showSearch"
-      label-width="68px"
     >
-      <el-form-item label="用户Id" prop="userId">
+      <el-form-item label="用户火脉号">
         <el-input
-          v-model="queryParams.userId"
+          v-model="queryParams.uuid"
           placeholder="请输入用户Id"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="视频标题" prop="title">
+      <el-form-item label="视频标题">
         <el-input
           v-model="queryParams.title"
           placeholder="请输入视频标题"
@@ -31,6 +30,7 @@
           placeholder="请选择状态"
           clearable
           size="small"
+          @change="handleQuery"
         >
           <el-option label="全部" :value="null" />
           <el-option
@@ -41,13 +41,11 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="关键词" prop="keywordId">
-        <el-input
+      <el-form-item label="关键词">
+        <KeywordSelect
           v-model="queryParams.keywordId"
-          placeholder="请输入关键词"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
+          single
+          @change="handleQuery"
         />
       </el-form-item>
       <el-form-item>
@@ -115,19 +113,44 @@
         </template>
       </el-table-column>
       <el-table-column label="视频时长" align="center" prop="duration" />
-      <el-table-column label="关联话题" align="center" prop="topic" />
-      <el-table-column label="关联好友" align="center" prop="buddy" />
+      <el-table-column label="关联话题" align="center">
+        <template slot-scope="scope">
+          <div v-for="(item, index) in scope.row.topicArr" :key="index">
+            #{{ item }}#
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="关联好友" align="center" prop="buddy">
+        <template slot-scope="scope">
+          <div v-for="(item, index) in scope.row.buddyArr" :key="index">
+            @{{ item }}
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column label="是否可见" align="center" prop="visible" />
-      <el-table-column label="状态" align="center" prop="status" />
       <el-table-column label="点赞量" align="center" prop="starNum" />
       <el-table-column label="评论量" align="center" prop="commentNum" />
       <el-table-column label="播放量" align="center" prop="viewNum" />
-      <el-table-column label="关键词" align="center" prop="keywordId" />
+      <el-table-column label="关键词" align="center">
+        <template slot-scope="scope">
+          <div v-for="(item, index) in scope.row.keywordArr" :key="index">
+            {{ item }}
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column label="备注" align="center" prop="remark" />
+      <el-table-column
+        label="创建时间"
+        align="center"
+        prop="createTime"
+        width="150"
+      />
+      <el-table-column label="状态" align="center" prop="statusStr" />
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
+        width="120"
       >
         <template slot-scope="scope">
           <el-button
@@ -140,7 +163,6 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
             v-if="+scope.row.status !== 2"
             @click="handleChangeStatus(scope.row, 2)"
             >审核拒绝
@@ -171,18 +193,16 @@
 <script>
 import {
   listVideo,
-  getVideo,
-  delVideo,
-  addVideo,
-  updateVideo,
-  exportVideo
+  changeStatus
 } from "@/api/business/video";
 import videoPreview from "@/components/VideoPreview/index";
+import KeywordSelect from "@/components/KeywordSelect/index";
 
 export default {
   name: "Video",
   components: {
-    videoPreview
+    videoPreview,
+    KeywordSelect
   },
   data () {
     return {
@@ -223,10 +243,22 @@ export default {
     getList () {
       this.loading = true;
       listVideo(this.queryParams).then(response => {
-        this.videoList = response.rows;
+        this.videoList = response.rows.map(item => {
+          return Object.assign({}, item, {
+            'topicArr': item.topic.split(','),
+            'buddyArr': item.buddy.split(','),
+            'visible': +item.visible === 1 ? '公开' : '私密',
+            'statusStr': this.typeToStr(this.statusOptions, item.status),
+            'keywordArr': item.keyword.split(',')
+          })
+        });
         this.total = response.total;
         this.loading = false;
       });
+    },
+    typeToStr (list, type) {
+      const item = list.find(i => +i.value === +type)
+      return item === undefined ? '' : item.label
     },
     /** 搜索按钮操作 */
     handleQuery () {
@@ -244,15 +276,13 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
-      })
-        .then(async () => {
-          try {
-            await changeStatus({ userId: row.userId, status: 3 });
-            this.msgSuccess(`删除成功`);
-            this.getList();
-          } catch (error) { }
-        })
-        .catch(() => { });
+      }).then(async () => {
+        try {
+          await changeStatus({ videoId: row.videoId, status: 3 });
+          this.msgSuccess(`删除成功`);
+          this.getList();
+        } catch (error) { }
+      }).catch(() => { });
     },
     handleChangeStatus (row, val) {
       const msg = val === 1 ? "审核通过" : "审核拒绝";
@@ -260,18 +290,16 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
-      })
-        .then(async () => {
-          try {
-            await changeStatus({ userId: row.userId, status: val });
-            this.msgSuccess(`${msg}成功`);
-            this.getList();
-          } catch (error) { }
-        })
-        .catch(() => { });
+      }).then(async () => {
+        try {
+          await changeStatus({ videoId: row.videoId, status: val });
+          this.msgSuccess(`${msg}成功`);
+          this.getList();
+        } catch (error) { }
+      }).catch(() => { });
     },
     handlePreview (row) {
-      this.videoSrc = "https://www.w3school.com.cn/i/movie.ogg";
+      this.videoSrc = row.videoUrl;
       this.videoDialog = true;
     }
   }
