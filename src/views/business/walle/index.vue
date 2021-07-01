@@ -14,13 +14,17 @@
       <el-row :gutter="20">
         <el-col :span="3" class="card-label"> 红包剩余总额: </el-col>
         <el-col :span="21">
-          <el-button type="text" size="small">{{ detail.sumMoney }}</el-button>
+          <el-button type="text" size="small">
+            {{ detail.totalAmount }}
+          </el-button>
         </el-col>
       </el-row>
       <el-row :gutter="20">
         <el-col :span="3" class="card-label"> 单笔领取金额: </el-col>
         <el-col :span="21">
-          <el-button type="text" size="small">{{ detail.money }}</el-button>
+          <el-button type="text" size="small">
+            {{ detail.singleAmount }}
+          </el-button>
         </el-col>
       </el-row>
     </el-card>
@@ -28,20 +32,22 @@
     <!-- 添加或修改钱包明细对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="红包总额" prop="sumMoney">
+        <el-form-item label="红包总额" prop="totalAmount">
           <el-input
-            v-model="form.sumMoney"
+            v-model="form.totalAmount"
             placeholder="请输入"
             clearable
             size="small"
+            @input="form.totalAmount = checkInputDecimal(form.totalAmount)"
           />
         </el-form-item>
-        <el-form-item label="单笔领取金额" prop="money">
+        <el-form-item label="单笔领取金额" prop="singleAmount">
           <el-input
-            v-model="form.money"
+            v-model="form.singleAmount"
             placeholder="请输入"
             clearable
             size="small"
+            @input="form.singleAmount = checkInputDecimal(form.singleAmount)"
           />
         </el-form-item>
       </el-form>
@@ -56,7 +62,7 @@
 </template>
 
 <script>
-import { } from "@/api/business/walle";
+import { listConfig, updateConfig } from "@/api/business/walle";
 
 export default {
   name: "Walle",
@@ -71,26 +77,39 @@ export default {
       open: false,
       // 表单校验
       rules: {
-        sumMoney: [
+        totalAmount: [
           { required: true, message: "不能为空", trigger: "blur" }
         ],
-        money: [
+        singleAmount: [
           { required: true, message: "不能为空", trigger: "blur" }
         ],
       },
       form: {
-        sumMoney: 0,
-        money: 0
+        id: 0,
+        totalAmount: 0,
+        singleAmount: 0
       },
       detail: {
-        sumMoney: 0,
-        money: 0
+        id: 0,
+        totalAmount: 0,
+        singleAmount: 0
       }
     };
   },
   created () {
+    this.getList()
   },
   methods: {
+    async getList () {
+      try {
+        const { rows } = await listConfig()
+        this.detail = !rows.length ? {
+          totalAmount: 0,
+          singleAmount: 0
+        } : rows[0]
+      } catch (error) {
+      }
+    },
     edit () {
       this.title = '修改红包配置'
       this.form = { ...this.detail }
@@ -105,16 +124,19 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.buttonLoading = true;
-          // updateWalle(this.form).then(response => {
-          //   this.buttonLoading = false;
-          //   this.msgSuccess("修改成功");
-          //   this.open = false;
-          //   this.getList();
-          // });
+          updateConfig(this.form).then(response => {
+            this.buttonLoading = false;
+            this.open = false;
+            this.msgSuccess("修改成功");
+            this.getList();
+          });
         }
       });
     },
-
+    checkInputDecimal (val) {
+      val = /^\d+\.?\d{0,2}$/.test(val) || val === '' ? val : (val = '')
+      return val
+    }
   }
 };
 </script>

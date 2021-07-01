@@ -1,18 +1,18 @@
 import request from '@/utils/request'
 
 // 查询红包金额配置列表
-export function listConfig (query) {
+export function listConfig (params) {
   return request({
-    url: '/business/walle/list',
+    url: '/business/walleConfig/list',
     method: 'get',
-    params: query
+    params: params
   })
 }
 
 // 查询红包金额配置详细
 export function getConfig (id) {
   return request({
-    url: '/business/walle/' + id,
+    url: '/business/walleConfig/' + id,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getConfig (id) {
 // 新增红包金额配置
 export function addConfig (data) {
   return request({
-    url: '/business/walle',
+    url: '/business/walleConfig',
     method: 'post',
     data: data
   })
@@ -29,7 +29,7 @@ export function addConfig (data) {
 // 修改红包金额配置
 export function updateConfig (data) {
   return request({
-    url: '/business/walle',
+    url: '/business/walleConfig',
     method: 'put',
     data: data
   })
@@ -38,7 +38,7 @@ export function updateConfig (data) {
 // 删除红包金额配置
 export function delConfig (id) {
   return request({
-    url: '/business/walle/' + id,
+    url: '/business/walleConfig/' + id,
     method: 'delete'
   })
 }
@@ -46,7 +46,7 @@ export function delConfig (id) {
 // 导出红包金额配置
 export function exportConfig (query) {
   return request({
-    url: '/business/walle/export',
+    url: '/business/walleConfig/export',
     method: 'get',
     params: query
   })
