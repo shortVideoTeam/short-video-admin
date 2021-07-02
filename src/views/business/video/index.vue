@@ -186,7 +186,7 @@
       @pagination="getList"
     />
 
-    <videoPreview :src="videoSrc" :visible.sync="videoDialog" />
+    <VideoPreview :src="videoSrc" :visible.sync="videoDialog" />
   </div>
 </template>
 
@@ -195,13 +195,13 @@ import {
   listVideo,
   changeStatus
 } from "@/api/business/video";
-import videoPreview from "@/components/VideoPreview/index";
+import VideoPreview from "@/components/VideoPreview/index";
 import KeywordSelect from "@/components/KeywordSelect/index";
 
 export default {
   name: "Video",
   components: {
-    videoPreview,
+    VideoPreview,
     KeywordSelect
   },
   data () {

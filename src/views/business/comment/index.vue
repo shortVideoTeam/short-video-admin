@@ -5,7 +5,6 @@
       ref="queryForm"
       :inline="true"
       v-show="showSearch"
-      label-width="68px"
     >
       <el-form-item label="视频ID" prop="videoId">
         <el-input
@@ -92,35 +91,20 @@
         </template>
       </el-table-column>
       <el-table-column label="评论内容" align="center" prop="content" />
-      <el-table-column label="评论用户Id" align="center" prop="userId" />
-      <el-table-column label="评论用户头像" align="center">
-        <template slot-scope="scope">
-          <el-image
-            size="mini"
-            slot="reference"
-            fit="contain"
-            :src="scope.row.avatar"
-            :style="{ width: '50px', height: '50px', marginRight: '5px' }"
-            :previewSrcList="[scope.row.avatar]"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="评论用户昵称"
-        align="center"
-        prop="nickName"
-        width="120"
-      />
+      <el-table-column label="评论时间" align="center" prop="createTime" />
+      <el-table-column label="评论点赞数" align="center" prop="starNum" />
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
+          <el-button size="mini" type="text" @click="handleLook(scope.row)"
+            >查看回复
+          </el-button>
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:comment:remove']"
             >删除
@@ -136,10 +120,35 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
+
+    <VideoPreview :src="videoSrc" :visible.sync="videoDialog" />
+    <!--  -->
+    <el-dialog :visible.sync="dialog" title="评论回复详情" width="75%">
+      <el-table v-loading="dialogLoading" :data="dialogList">
+        <el-table-column type="index" width="55" align="center" label="编号" />
+        <el-table-column align="center" label="回复用户ID" />
+        <el-table-column align="center" label="回复用户头像" />
+        <el-table-column align="center" label="回复用户火脉号" />
+        <el-table-column align="center" label="回复内容" />
+        <el-table-column align="center" label="回复目标用户ID" />
+        <el-table-column align="center" label="回复类型" />
+        <el-table-column align="center" label="回复时间" />
+        <el-table-column align="center" label="回复点赞数" />
+      </el-table>
+      <pagination
+        v-show="dialogTotal > 0"
+        :total="dialogTotal"
+        :page.sync="dialogParams.pageNum"
+        :limit.sync="dialogParams.pageSize"
+        @pagination="getDialogList"
+      />
+    </el-dialog>
+    <!--  -->
   </div>
 </template>
 
 <script>
+import VideoPreview from "@/components/VideoPreview/index";
 import {
   listComment,
   getComment,
@@ -148,14 +157,13 @@ import {
   updateComment,
   exportComment
 } from "@/api/business/comment";
-import Editor from "@/components/Editor";
 
 export default {
   name: "Comment",
   components: {
-    Editor
+    VideoPreview
   },
-  data() {
+  data () {
     return {
       // 遮罩层
       loading: true,
@@ -172,15 +180,29 @@ export default {
         videoId: undefined,
         title: undefined,
         userId: undefined
-      }
+      },
+
+      // video
+      videoDialog: false,
+      videoSrc: "",
+      //
+      dialog: false,
+      dialogLoading: false,
+      dialogTotal: 0,
+      dialogList: [],
+      dialogParams: {
+        pageNum: 1,
+        pageSize: 10,
+      },
+
     };
   },
-  created() {
+  created () {
     this.getList();
   },
   methods: {
     /** 查询评论列表 */
-    getList() {
+    getList () {
       this.loading = true;
       listComment(this.queryParams).then(response => {
         this.commentList = response.rows;
@@ -188,40 +210,60 @@ export default {
         this.loading = false;
       });
     },
-
     /** 搜索按钮操作 */
-    handleQuery() {
+    handleQuery () {
       this.queryParams.pageNum = 1;
       this.getList();
     },
     /** 重置按钮操作 */
-    resetQuery() {
+    resetQuery () {
       this.resetForm("queryForm");
       this.handleQuery();
     },
     /** 删除按钮操作 */
-    handleDelete(row) {
+    handleDelete (row) {
       const commentIds = row.commentId || this.ids;
-      this.$confirm(
-        '是否确认删除评论编号为"' + commentIds + '"的数据项?',
-        "警告",
-        {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        }
-      )
-        .then(() => {
-          this.loading = true;
-          return delComment(commentIds);
-        })
-        .then(() => {
-          this.loading = false;
-          this.getList();
-          this.msgSuccess("删除成功");
-        })
-        .catch(() => {});
-    }
+      this.$confirm('确认删除吗?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        this.loading = true;
+        return delComment(commentIds);
+      }).then(() => {
+        this.loading = false;
+        this.getList();
+        this.msgSuccess("删除成功");
+      }).catch(() => { });
+    },
+    handlePreview (row) {
+      this.videoSrc = row.videoUrl;
+      this.videoDialog = true;
+    },
+    handleLook (row) {
+      this.dialog = true
+      this.dialogTotal = 0
+      this.dialogList = []
+      this.dialogParams = {
+        pageNum: 1,
+        pageSize: 10,
+        userId: row.userId
+      }
+      this.getDialogList()
+    },
+    getDialogList () {
+      this.dialogLoading = true;
+      getComment(this.dialogParams).then(response => {
+        this.dialogList = response.rows.map(item => {
+          return Object.assign({}, item, {
+            'statusStr': +item.status === 1 ? '启用' : '禁用',
+            'isBindWx': !!item.phone ? '是' : '否'
+          })
+        });
+        this.dialogTotal = response.total;
+        this.dialogLoading = false;
+      });
+    },
   }
 };
 </script>
