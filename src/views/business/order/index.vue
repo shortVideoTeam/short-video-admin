@@ -5,7 +5,6 @@
       ref="queryForm"
       :inline="true"
       v-show="showSearch"
-      label-width="68px"
     >
       <el-form-item label="订单号" prop="orderNo">
         <el-input
@@ -16,10 +15,10 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="用户ID" prop="userId">
+      <el-form-item label="用户火脉号" prop="uuid">
         <el-input
-          v-model="queryParams.userId"
-          placeholder="请输入用户ID"
+          v-model="queryParams.uuid"
+          placeholder="请输入用户火脉号"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -45,11 +44,22 @@
         >
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="订单状态" prop="orderStatus">
-        <el-select v-model="queryParams.orderStatus" @change="handleQuery">
+      <el-form-item label="订单状态" prop="status">
+        <el-select v-model="queryParams.status" @change="handleQuery">
           <el-option label="全部" :value="null" />
           <el-option
-            v-for="item in orderStatusOptions"
+            v-for="item in statusOptions"
+            :key="item.label + item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="订单类型" prop="orderType">
+        <el-select v-model="queryParams.orderType" @change="handleQuery">
+          <el-option label="全部" :value="null" />
+          <el-option
+            v-for="item in orderTypeOptions"
             :key="item.label + item.value"
             :label="item.label"
             :value="item.value"
@@ -61,17 +71,6 @@
           <el-option label="全部" :value="null" />
           <el-option
             v-for="item in payWayOptions"
-            :key="item.label + item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="支付来源" prop="paySource">
-        <el-select v-model="queryParams.paySource" @change="handleQuery">
-          <el-option label="全部" :value="null" />
-          <el-option
-            v-for="item in paySourceOptions"
             :key="item.label + item.value"
             :label="item.label"
             :value="item.value"
@@ -110,9 +109,8 @@
     </el-row>
 
     <el-table v-loading="loading" :data="orderList">
-      <el-table-column label="ID" align="center" prop="id" v-if="false" />
+      <el-table-column type="index" width="55" align="center" label="编号" />
       <el-table-column label="订单号" align="center" prop="orderNo" />
-      <el-table-column label="用户ID" align="center" prop="userId" />
       <el-table-column label="用户头像" align="center">
         <template slot-scope="scope">
           <el-image
@@ -143,27 +141,22 @@
         prop="phone"
         width="120"
       />
+      <el-table-column label="订单类型" align="center" prop="orderTypeStr" />
       <el-table-column label="订单金额" align="center" prop="amount" />
       <el-table-column
         label="支付时间"
         align="center"
         prop="payTime"
         width="180"
-      >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.payTime, "{y}-{m}-{d}") }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="订单状态" align="center" prop="status" />
+      />
+      <el-table-column label="订单状态" align="center" prop="statusStr" />
       <el-table-column label="支付方式" align="center" prop="payWay" />
-      <el-table-column label="支付来源" align="center" prop="payWay" />
-      <!-- <el-table-column
-        label="操作"
+      <el-table-column
+        label="创建时间"
         align="center"
-        class-name="small-padding fixed-width"
-      >
-        <template slot-scope="scope"> </template>
-      </el-table-column> -->
+        prop="createTime"
+        width="180"
+      />
     </el-table>
 
     <pagination
@@ -179,17 +172,13 @@
 <script>
 import {
   listOrder,
-  getOrder,
-  delOrder,
-  addOrder,
-  updateOrder,
   exportOrder
 } from "@/api/business/order";
 
 export default {
   name: "Order",
   components: {},
-  data() {
+  data () {
     return {
       // 遮罩层
       loading: true,
@@ -206,58 +195,76 @@ export default {
         pageNum: 1,
         pageSize: 10,
         orderNo: undefined,
-        userId: undefined,
+        uuid: undefined,
         amount: undefined,
         payTime: null,
-        orderStatus: null,
+        orderType: null,
+        status: null,
         payWay: null,
-        paySource: null
       },
-      orderStatusOptions: [],
-      payWayOptions: [],
-      paySourceOptions: []
+      statusOptions: [
+        { label: '待付款', value: 1 },
+        { label: '已付款', value: 2 },
+      ],
+      payWayOptions: [
+        { label: '微信', value: 1 },
+        { label: '余额', value: 2 },
+      ],
+      orderTypeOptions: [
+        { label: '购买', value: 1 },
+        { label: '充值', value: 2 },
+        { label: '提现', value: 3 },
+        { label: '收益', value: 4 },
+      ]
     };
   },
-  created() {
+  created () {
     this.getList();
   },
   methods: {
     /** 查询订单记录列表 */
-    getList() {
+    getList () {
       this.loading = true;
       listOrder(this.queryParams).then(response => {
-        this.orderList = response.rows;
+        this.orderList = response.rows.map(item => {
+          return Object.assign({}, item, {
+            'statusStr': this.typeToStr(this.statusOptions, item.status),
+            'orderTypeStr': this.typeToStr(this.orderTypeOptions, item.orderType),
+            'payWay': this.typeToStr(this.payWayOptions, item.payWay)
+          })
+        });
         this.total = response.total;
         this.loading = false;
       });
     },
+    typeToStr (list, type) {
+      const item = list.find(i => +i.value === +type)
+      return item === undefined ? '' : item.label
+    },
     /** 搜索按钮操作 */
-    handleQuery() {
+    handleQuery () {
       this.queryParams.pageNum = 1;
       this.getList();
     },
     /** 重置按钮操作 */
-    resetQuery() {
+    resetQuery () {
       this.resetForm("queryForm");
       this.handleQuery();
     },
     /** 导出按钮操作 */
-    handleExport() {
+    handleExport () {
       const queryParams = this.queryParams;
       this.$confirm("是否确认导出所有订单记录数据项?", "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
-      })
-        .then(() => {
-          this.exportLoading = true;
-          return exportOrder(queryParams);
-        })
-        .then(response => {
-          this.download(response.msg);
-          this.exportLoading = false;
-        })
-        .catch(() => {});
+      }).then(() => {
+        this.exportLoading = true;
+        return exportOrder(queryParams);
+      }).then(response => {
+        this.download(response.msg);
+        this.exportLoading = false;
+      }).catch(() => { });
     }
   }
 };

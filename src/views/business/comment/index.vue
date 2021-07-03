@@ -126,14 +126,39 @@
     <el-dialog :visible.sync="dialog" title="评论回复详情" width="75%">
       <el-table v-loading="dialogLoading" :data="dialogList">
         <el-table-column type="index" width="55" align="center" label="编号" />
-        <el-table-column align="center" label="回复用户ID" />
-        <el-table-column align="center" label="回复用户头像" />
-        <el-table-column align="center" label="回复用户火脉号" />
-        <el-table-column align="center" label="回复内容" />
-        <el-table-column align="center" label="回复目标用户ID" />
-        <el-table-column align="center" label="回复类型" />
-        <el-table-column align="center" label="回复时间" />
-        <el-table-column align="center" label="回复点赞数" />
+        <el-table-column label="回复用户头像" align="center">
+          <template slot-scope="scope">
+            <el-image
+              size="mini"
+              slot="reference"
+              fit="contain"
+              :src="scope.row.avatar"
+              :style="{ width: '50px', height: '50px', marginRight: '5px' }"
+              :previewSrcList="[scope.row.avatar]"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="回复用户昵称"
+          align="center"
+          prop="nickName"
+          width="120"
+        />
+        <el-table-column
+          label="回复用户火脉号"
+          align="center"
+          prop="uuid"
+          width="120"
+        />
+        <el-table-column align="center" label="回复内容" prop="content" />
+        <el-table-column
+          align="center"
+          label="回复目标用户ID"
+          prop="replyUserId"
+        />
+        <el-table-column align="center" label="回复类型" prop="replyType" />
+        <el-table-column align="center" label="回复时间" prop="createTime" />
+        <el-table-column align="center" label="回复点赞数" prop="star" />
       </el-table>
       <pagination
         v-show="dialogTotal > 0"
@@ -153,9 +178,9 @@ import {
   listComment,
   getComment,
   delComment,
-  addComment,
-  updateComment,
-  exportComment
+  // addComment,
+  // updateComment,
+  // exportComment
 } from "@/api/business/comment";
 
 export default {
@@ -247,7 +272,7 @@ export default {
       this.dialogParams = {
         pageNum: 1,
         pageSize: 10,
-        userId: row.userId
+        commentId: row.commentId
       }
       this.getDialogList()
     },
@@ -256,8 +281,6 @@ export default {
       getComment(this.dialogParams).then(response => {
         this.dialogList = response.rows.map(item => {
           return Object.assign({}, item, {
-            'statusStr': +item.status === 1 ? '启用' : '禁用',
-            'isBindWx': !!item.phone ? '是' : '否'
           })
         });
         this.dialogTotal = response.total;

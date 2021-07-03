@@ -5,33 +5,32 @@
       ref="queryForm"
       :inline="true"
       v-show="showSearch"
-      label-width="68px"
     >
-      <el-form-item label="用户火脉号" prop="userId">
+      <el-form-item label="用户火脉号" prop="uuid">
         <el-input
-          v-model="queryParams.userId"
-          placeholder="请输入用户ID"
+          v-model="queryParams.uuid"
+          placeholder="请输入用户火脉号"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" @change="handleQuery">
+      <el-form-item label="审核状态" prop="auditStatus">
+        <el-select v-model="queryParams.auditStatus" @change="handleQuery">
           <el-option label="全部" :value="null" />
           <el-option
-            v-for="item in statusOptions"
+            v-for="item in auditStatusOptions"
             :key="item.label + item.value"
             :label="item.label"
             :value="item.value"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="申请时间" prop="time">
+      <el-form-item label="申请时间" prop="createTime">
         <el-date-picker
           clearable
           size="small"
-          v-model="queryParams.time"
+          v-model="queryParams.createTime"
           type="date"
           value-format="yyyy-MM-dd"
           placeholder="请选择申请时间"
@@ -70,7 +69,6 @@
 
     <el-table v-loading="loading" :data="WithdrawList">
       <el-table-column type="index" width="55" align="center" label="编号" />
-      <el-table-column label="用户ID" align="center" prop="userId" />
       <el-table-column label="用户头像" align="center">
         <template slot-scope="scope">
           <el-image
@@ -102,39 +100,40 @@
         width="120"
       />
       <el-table-column label="提现金额" align="center" prop="amount" />
+      <el-table-column label="实际金额" align="center" prop="amount" />
+      <el-table-column label="提现状态" align="center" prop="auditStatusStr" />
       <el-table-column
-        label="提现时间"
+        label="申请时间"
         align="center"
-        prop="payTime"
-        width="180"
-      >
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.payTime, '{y}-{m}-{d}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="实际金额" align="center" prop="" />
-      <el-table-column label="提现状态" align="center" prop="" />
-      <el-table-column label="申请时间" align="center" prop="" />
-      <el-table-column label="审核时间" align="center" prop="" />
-      <el-table-column label="微信流水号" align="center" prop="" />
-      <el-table-column label="驳回原因" align="center" prop="" />
+        prop="createTime"
+        width="155"
+      />
+      <el-table-column label="审核时间" align="center" prop="auditTime" />
+      <el-table-column
+        label="微信流水号"
+        align="center"
+        prop="wxOrderNo"
+        width="160"
+      />
+      <el-table-column label="驳回原因" align="center" prop="remark" />
       <el-table-column
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
+        width="120"
       >
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
-            v-if="+scope.row.status !== 1"
+            v-if="+scope.row.auditStatus !== 1"
             @click="handleChangeStatus(scope.row, 1)"
             >审核通过
           </el-button>
           <el-button
             size="mini"
             type="text"
-            v-if="+scope.row.status !== 2"
+            v-if="+scope.row.auditStatus !== 2"
             @click="handleChangeStatus(scope.row, 2)"
             >审核拒绝
           </el-button>
@@ -153,7 +152,11 @@
 </template>
 
 <script>
-import { listWithdraw, exportWithdraw, changeStatus } from "@/api/business/withdraw";
+import {
+  listOrder,
+  updateOrder,
+  exportOrder
+} from "@/api/business/order";
 
 export default {
   name: "Withdraw",
@@ -173,33 +176,38 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
+        orderType: 3,
         uuid: undefined,
-        status: null,
+        auditStatus: null,
         createTime: null
       },
-      statusOptions: [
-        { label: "启用", value: 1 },
-        { label: "禁用", value: 0 }
+      auditStatusOptions: [
+        { label: '待审核', value: 0 },
+        { label: '审核通过', value: 1 },
+        { label: '审核拒绝', value: 2 },
       ]
     };
   },
   created () {
-    // this.getList();
+    this.getList();
   },
   methods: {
     /** 查询用户信息列表 */
     getList () {
       this.loading = true;
-      listWithdraw(this.queryParams).then(response => {
+      listOrder(this.queryParams).then(response => {
         this.WithdrawList = response.rows.map(item => {
           return Object.assign({}, item, {
-            statusStr: +item.status === 1 ? "启用" : "禁用",
-            isBindWx: !!item.phone ? "是" : "否"
+            'auditStatusStr': this.typeToStr(this.auditStatusOptions, item.auditStatus),
           });
         });
         this.total = response.total;
         this.loading = false;
       });
+    },
+    typeToStr (list, type) {
+      const item = list.find(i => +i.value === +type)
+      return item === undefined ? '' : item.label
     },
     /** 搜索按钮操作 */
     handleQuery () {
@@ -220,7 +228,7 @@ export default {
         type: "warning"
       }).then(() => {
         this.exportLoading = true;
-        return exportWithdraw(queryParams);
+        return exportOrder(queryParams);
       }).then(response => {
         this.download(response.msg);
         this.exportLoading = false;
@@ -234,7 +242,7 @@ export default {
         type: "warning"
       }).then(async () => {
         try {
-          await changeStatus({ WithdrawId: row.WithdrawId, status: val });
+          await updateOrder({ id: row.id, orderNo: row.orderNo, auditStatus: val, auditTime: new Date().getTime() });
           this.msgSuccess(`${msg}成功`);
           this.getList();
         } catch (error) { }
