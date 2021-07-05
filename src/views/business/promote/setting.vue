@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-card style="margin-bottom: 20px">
       <div slot="header" class="clearfix">
-        <span style="font-size: 20px; font-weight: bold">红包配置</span>
+        <span style="font-size: 20px; font-weight: bold">推广配置</span>
         <el-button
           style="float: right; padding: 3px 0"
           type="text"
@@ -12,34 +12,92 @@
         </el-button>
       </div>
       <el-row :gutter="20">
-        <el-col :span="3" class="card-label"> 邀请人数: </el-col>
-        <el-col :span="9">
-          <el-button type="text" size="small">{{ detail.xxx }}</el-button>
+        <el-col :span="4" class="card-label"> 参与作品需邀请人数: </el-col>
+        <el-col :span="8">
+          <el-button type="text" size="small">{{ detail.inviteNum }}</el-button>
         </el-col>
       </el-row>
       <!--  -->
       <el-row :gutter="20">
-        <el-col :span="3" class="card-label"> 推广时长: </el-col>
-        <el-col :span="6">
-          <el-button type="text" size="small">{{ detail.xxx }}</el-button>
+        <el-col :span="4" class="card-label"> 作品推广热门人数限定: </el-col>
+        <el-col :span="4">
+          <el-button type="text" size="small">{{ detail.maxNum }}</el-button>
+        </el-col>
+        <el-col :span="4" class="card-label"> 作品热门推广金额设定: </el-col>
+        <el-col :span="4">
+          <el-button type="text" size="small">{{ detail.money }}</el-button>
         </el-col>
       </el-row>
       <!--  -->
       <el-row :gutter="20">
-        <el-col :span="3" class="card-label"> 推广金额: </el-col>
-        <el-col :span="6">
-          <el-button type="text" size="small">{{ detail.xxx }}</el-button>
+        <el-col :span="4" class="card-label"> 作品推广金设定平台: </el-col>
+        <el-col :span="4">
+          <el-button type="text" size="small">
+            {{ detail.platformRate }}
+          </el-button>
+        </el-col>
+        <el-col :span="4" class="card-label"> 邀请人: </el-col>
+        <el-col :span="4">
+          <el-button type="text" size="small">
+            {{ detail.inviteRate }}
+          </el-button>
+        </el-col>
+        <el-col :span="4" class="card-label"> 被助推人: </el-col>
+        <el-col :span="4">
+          <el-button type="text" size="small">
+            {{ detail.boosterRate }}
+          </el-button>
         </el-col>
       </el-row>
       <!--  -->
     </el-card>
 
     <!-- 添加或修改钱包明细对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="xxx" prop="xxx">
+    <el-dialog :title="title" :visible.sync="open" width="550px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="155px">
+        <el-form-item label="参与作品需邀请人数" prop="inviteNum">
           <el-input
-            v-model="form.xxx"
+            v-model="form.inviteNum"
+            placeholder="请输入"
+            clearable
+            size="small"
+          />
+        </el-form-item>
+        <el-form-item label="作品推广热门人数限定" prop="maxNum">
+          <el-input
+            v-model="form.maxNum"
+            placeholder="请输入"
+            clearable
+            size="small"
+          />
+        </el-form-item>
+        <el-form-item label="作品热门推广金额设定" prop="money">
+          <el-input
+            v-model="form.money"
+            placeholder="请输入"
+            clearable
+            size="small"
+          />
+        </el-form-item>
+        <el-form-item label="作品推广金设定平台" prop="platformRate">
+          <el-input
+            v-model="form.platformRate"
+            placeholder="请输入"
+            clearable
+            size="small"
+          />
+        </el-form-item>
+        <el-form-item label="邀请人" prop="inviteRate">
+          <el-input
+            v-model="form.inviteRate"
+            placeholder="请输入"
+            clearable
+            size="small"
+          />
+        </el-form-item>
+        <el-form-item label="被助推人" prop="boosterRate">
+          <el-input
+            v-model="form.boosterRate"
             placeholder="请输入"
             clearable
             size="small"
@@ -57,7 +115,7 @@
 </template>
 
 <script>
-import { } from "@/api/business/promote";
+import { listConfig, updateConfig } from "@/api/business/promote";
 
 export default {
   name: "Promote-Setting",
@@ -77,16 +135,43 @@ export default {
         ],
       },
       form: {
-        xxx: 0,
+        id: 0,
+        inviteNum: 0,
+        maxNum: 0,
+        money: 0,
+        platformRate: 0,
+        inviteRate: 0,
+        boosterRate: 0,
       },
       detail: {
-        xxx: 0,
+        id: 0,
+        inviteNum: 0,
+        maxNum: 0,
+        money: 0,
+        platformRate: 0,
+        inviteRate: 0,
+        boosterRate: 0,
       }
     };
   },
   created () {
+    this.getList()
   },
   methods: {
+    async getList () {
+      try {
+        const { rows } = await listConfig()
+        this.detail = !rows.length ? {
+          inviteNum: 0,
+          maxNum: 0,
+          money: 0,
+          platformRate: 0,
+          inviteRate: 0,
+          boosterRate: 0,
+        } : rows[0]
+      } catch (error) {
+      }
+    },
     edit () {
       this.title = '修改推广配置'
       this.form = { ...this.detail }
@@ -101,16 +186,19 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.buttonLoading = true;
-          // updateWalle(this.form).then(response => {
-          //   this.buttonLoading = false;
-          //   this.msgSuccess("修改成功");
-          //   this.open = false;
-          //   this.getList();
-          // });
+          updateConfig(this.form).then(response => {
+            this.buttonLoading = false;
+            this.msgSuccess("修改成功");
+            this.open = false;
+            this.getList();
+          });
         }
       });
     },
-
+    checkInputDecimal (val) {
+      val = /^\d+\.?\d{0,2}$/.test(val) || val === '' ? val : (val = '')
+      return val
+    }
   }
 };
 </script>
