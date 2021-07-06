@@ -26,6 +26,7 @@ module.exports = {
   lintOnSave: process.env.NODE_ENV === 'development',
   // 如果你不需要生产环境的 source map，可以将其设置为 false 以加速生产环境构建。
   productionSourceMap: false,
+  parallel: require('os').cpus().length > 1,
   // webpack-dev-server 相关配置
   devServer: {
     host: '0.0.0.0',
@@ -50,6 +51,16 @@ module.exports = {
         '@': resolve('src')
       }
     }
+  },
+  css: {
+    // 是否使用css分离插件 ExtractTextPlugin
+    extract: false,
+    // 开启 CSS source maps?
+    sourceMap: false,
+    // css预设器配置项
+    loaderOptions: {},
+    // 启用 CSS modules for all css / pre-processor files.
+    requireModuleExtension: true
   },
   chainWebpack (config) {
     config.plugins.delete('preload') // TODO: need test
