@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import { listConfig, updateConfig } from "@/api/business/promote";
+import { listConfig, updateConfig } from "@/api/business/promoteConfig";
 
 export default {
   name: "Promote-Setting",

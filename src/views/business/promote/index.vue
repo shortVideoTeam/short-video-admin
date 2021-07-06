@@ -7,18 +7,18 @@
       v-show="showSearch"
       label-width="68px"
     >
-      <el-form-item label="火脉号" prop="uuid">
+      <el-form-item label="用户火脉号" prop="uuid">
         <el-input
           v-model="queryParams.uuid"
-          placeholder="请输入用户火脉号Id"
+          placeholder="请输入用户火脉号"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="作品信息" prop="info">
+      <el-form-item label="视频标题" prop="title">
         <el-input
-          v-model="queryParams.info"
+          v-model="queryParams.title"
           placeholder="请输入作品信息"
           clearable
           size="small"
@@ -63,7 +63,7 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="userList">
+    <el-table v-loading="loading" :data="tableList">
       <el-table-column type="index" width="55" align="center" label="编号" />
       <el-table-column label="用户头像" align="center">
         <template slot-scope="scope">
@@ -85,6 +85,7 @@
       />
       <el-table-column label="火脉号" align="center" prop="uuid" width="120" />
       <el-table-column label="手机号" align="center" prop="phone" width="120" />
+      <el-table-column label="视频标题" align="center" prop="title" />
       <el-table-column label="视频信息" align="center">
         <template slot-scope="scope">
           <el-button
@@ -93,13 +94,12 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="作品信息" align="center" prop="" />
-      <el-table-column label="推广时间" align="center" prop="" />
-      <el-table-column label="推广状态" align="center" prop="" />
-      <el-table-column label="热门次数" align="center" prop="" />
-      <el-table-column label="推广收益" align="center" prop="" />
-      <el-table-column label="发出推广值" align="center" prop="" />
-      <el-table-column label="收到推广值" align="center" prop="" />
+      <el-table-column label="推广时间" align="center" prop="createTime" />
+      <el-table-column label="推广状态" align="center" prop="statusStr" />
+      <el-table-column label="热门次数" align="center" prop="hotNum" />
+      <el-table-column label="推广收益" align="center" prop="profit" />
+      <el-table-column label="发出推广值" align="center" prop="sendVal" />
+      <el-table-column label="收到推广值" align="center" prop="receivedVal" />
     </el-table>
 
     <pagination
@@ -110,18 +110,18 @@
       @pagination="getList"
     />
 
-    <videoPreview :src="videoSrc" :visible.sync="videoDialog" />
+    <VideoPreview :src="videoSrc" :visible.sync="videoDialog" />
   </div>
 </template>
 
 <script>
-import { } from "@/api/business/promote";
-import videoPreview from "@/components/VideoPreview/index";
+import { listPromote } from "@/api/business/promote";
+import VideoPreview from "@/components/VideoPreview/index";
 
 export default {
   name: "Promote",
   components: {
-    videoPreview
+    VideoPreview
   },
   data () {
     return {
@@ -134,7 +134,7 @@ export default {
       // 总条数
       total: 0,
       // 用户信息表格数据
-      userList: [{}],
+      tableList: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -146,7 +146,7 @@ export default {
       statusOptions: [
         { label: "已报名", value: 1 },
         { label: "已参与", value: 2 },
-        { label: "已失效", value: 2 }
+        { label: "已失效", value: 3 }
       ],
 
       // video
@@ -160,17 +160,20 @@ export default {
   methods: {
     /** 查询用户信息列表 */
     getList () {
-      // this.loading = true;
-      // listUser(this.queryParams).then(response => {
-      //   this.userList = response.rows.map(item => {
-      //     return Object.assign({}, item, {
-      //       'statusStr': +item.status === 1 ? '启用' : '禁用',
-      //       'isBindWx': !!item.phone ? '是' : '否'
-      //     })
-      //   });
-      //   this.total = response.total;
-      //   this.loading = false;
-      // });
+      this.loading = true;
+      listPromote(this.queryParams).then(response => {
+        this.tableList = response.rows.map(item => {
+          return Object.assign({}, item, {
+            'statusStr': this.typeToStr(this.statusOptions, item.status),
+          })
+        });
+        this.total = response.total;
+        this.loading = false;
+      });
+    },
+    typeToStr (list, type) {
+      const item = list.find(i => +i.value === +type)
+      return item === undefined ? '' : item.label
     },
     /** 搜索按钮操作 */
     handleQuery () {
@@ -182,9 +185,8 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-
     handlePreview (row) {
-      this.videoSrc = "https://www.w3school.com.cn/i/movie.ogg";
+      this.videoSrc = row.videoUrl;
       this.videoDialog = true;
     }
   }

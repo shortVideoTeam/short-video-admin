@@ -1,53 +1,53 @@
 import request from '@/utils/request'
 
 
-// 查询推广配置列表
-export function listConfig (query) {
+// 查询推广记录列表
+export function listPromote (query) {
   return request({
-    url: '/business/promote/config/list',
+    url: '/business/promote/list',
     method: 'get',
     params: query
   })
 }
 
-// 查询推广配置详细
-export function getConfig (id) {
+// 查询推广记录详细
+export function getPromote (id) {
   return request({
-    url: '/business/promote/config/' + id,
+    url: '/business/promote/' + id,
     method: 'get'
   })
 }
 
-// 新增推广配置
-export function addConfig (data) {
+// 新增推广记录
+export function addPromote (data) {
   return request({
-    url: '/business/promote/config',
+    url: '/business/promote',
     method: 'post',
     data: data
   })
 }
 
-// 修改推广配置
-export function updateConfig (data) {
+// 修改推广记录
+export function updatePromote (data) {
   return request({
-    url: '/business/promote/config',
+    url: '/business/promote',
     method: 'put',
     data: data
   })
 }
 
-// 删除推广配置
-export function delConfig (id) {
+// 删除推广记录
+export function delPromote (id) {
   return request({
-    url: '/business/promote/config/' + id,
+    url: '/business/promote/' + id,
     method: 'delete'
   })
 }
 
-// 导出推广配置
-export function exportConfig (query) {
+// 导出推广记录
+export function exportPromote (query) {
   return request({
-    url: '/business/promote/config/export',
+    url: '/business/promote/export',
     method: 'get',
     params: query
   })
